@@ -1,0 +1,178 @@
+[
+  {
+    "player_1_strategy": "random_partition",
+    "player_2_strategy": "random_partition",
+    "matches": 250,
+    "player_1_win_rate": 0.456,
+    "player_2_win_rate": 0.532,
+    "draw_rate": 0.012,
+    "avg_player_1_score": 7.234,
+    "avg_player_2_score": 7.766,
+    "avg_margin": -0.532
+  },
+  {
+    "player_1_strategy": "random_partition",
+    "player_2_strategy": "top_heavy",
+    "matches": 250,
+    "player_1_win_rate": 0.496,
+    "player_2_win_rate": 0.46,
+    "draw_rate": 0.044,
+    "avg_player_1_score": 7.414,
+    "avg_player_2_score": 7.586,
+    "avg_margin": -0.172
+  },
+  {
+    "player_1_strategy": "random_partition",
+    "player_2_strategy": "uniform",
+    "matches": 250,
+    "player_1_win_rate": 0.308,
+    "player_2_win_rate": 0.648,
+    "draw_rate": 0.044,
+    "avg_player_1_score": 6.53,
+    "avg_player_2_score": 8.47,
+    "avg_margin": -1.94
+  },
+  {
+    "player_1_strategy": "random_partition",
+    "player_2_strategy": "weighted_value",
+    "matches": 250,
+    "player_1_win_rate": 0.128,
+    "player_2_win_rate": 0.816,
+    "draw_rate": 0.056,
+    "avg_player_1_score": 5.554,
+    "avg_player_2_score": 9.446,
+    "avg_margin": -3.892
+  },
+  {
+    "player_1_strategy": "top_heavy",
+    "player_2_strategy": "random_partition",
+    "matches": 250,
+    "player_1_win_rate": 0.572,
+    "player_2_win_rate": 0.396,
+    "draw_rate": 0.032,
+    "avg_player_1_score": 7.922,
+    "avg_player_2_score": 7.078,
+    "avg_margin": 0.844
+  },
+  {
+    "player_1_strategy": "top_heavy",
+    "player_2_strategy": "top_heavy",
+    "matches": 250,
+    "player_1_win_rate": 0.0,
+    "player_2_win_rate": 0.0,
+    "draw_rate": 1.0,
+    "avg_player_1_score": 7.5,
+    "avg_player_2_score": 7.5,
+    "avg_margin": 0.0
+  },
+  {
+    "player_1_strategy": "top_heavy",
+    "player_2_strategy": "uniform",
+    "matches": 250,
+    "player_1_win_rate": 0.0,
+    "player_2_win_rate": 1.0,
+    "draw_rate": 0.0,
+    "avg_player_1_score": 5.0,
+    "avg_player_2_score": 10.0,
+    "avg_margin": -5.0
+  },
+  {
+    "player_1_strategy": "top_heavy",
+    "player_2_strategy": "weighted_value",
+    "matches": 250,
+    "player_1_win_rate": 0.0,
+    "player_2_win_rate": 1.0,
+    "draw_rate": 0.0,
+    "avg_player_1_score": 5.5,
+    "avg_player_2_score": 9.5,
+    "avg_margin": -4.0
+  },
+  {
+    "player_1_strategy": "uniform",
+    "player_2_strategy": "random_partition",
+    "matches": 250,
+    "player_1_win_rate": 0.652,
+    "player_2_win_rate": 0.304,
+    "draw_rate": 0.044,
+    "avg_player_1_score": 8.68,
+    "avg_player_2_score": 6.32,
+    "avg_margin": 2.36
+  },
+  {
+    "player_1_strategy": "uniform",
+    "player_2_strategy": "top_heavy",
+    "matches": 250,
+    "player_1_win_rate": 1.0,
+    "player_2_win_rate": 0.0,
+    "draw_rate": 0.0,
+    "avg_player_1_score": 10.0,
+    "avg_player_2_score": 5.0,
+    "avg_margin": 5.0
+  },
+  {
+    "player_1_strategy": "uniform",
+    "player_2_strategy": "uniform",
+    "matches": 250,
+    "player_1_win_rate": 0.0,
+    "player_2_win_rate": 0.0,
+    "draw_rate": 1.0,
+    "avg_player_1_score": 7.5,
+    "avg_player_2_score": 7.5,
+    "avg_margin": 0.0
+  },
+  {
+    "player_1_strategy": "uniform",
+    "player_2_strategy": "weighted_value",
+    "matches": 250,
+    "player_1_win_rate": 0.0,
+    "player_2_win_rate": 1.0,
+    "draw_rate": 0.0,
+    "avg_player_1_score": 4.5,
+    "avg_player_2_score": 10.5,
+    "avg_margin": -6.0
+  },
+  {
+    "player_1_strategy": "weighted_value",
+    "player_2_strategy": "random_partition",
+    "matches": 250,
+    "player_1_win_rate": 0.832,
+    "player_2_win_rate": 0.144,
+    "draw_rate": 0.024,
+    "avg_player_1_score": 9.672,
+    "avg_player_2_score": 5.328,
+    "avg_margin": 4.344
+  },
+  {
+    "player_1_strategy": "weighted_value",
+    "player_2_strategy": "top_heavy",
+    "matches": 250,
+    "player_1_win_rate": 1.0,
+    "player_2_win_rate": 0.0,
+    "draw_rate": 0.0,
+    "avg_player_1_score": 9.5,
+    "avg_player_2_score": 5.5,
+    "avg_margin": 4.0
+  },
+  {
+    "player_1_strategy": "weighted_value",
+    "player_2_strategy": "uniform",
+    "matches": 250,
+    "player_1_win_rate": 1.0,
+    "player_2_win_rate": 0.0,
+    "draw_rate": 0.0,
+    "avg_player_1_score": 10.5,
+    "avg_player_2_score": 4.5,
+    "avg_margin": 6.0
+  },
+  {
+    "player_1_strategy": "weighted_value",
+    "player_2_strategy": "weighted_value",
+    "matches": 250,
+    "player_1_win_rate": 0.0,
+    "player_2_win_rate": 0.0,
+    "draw_rate": 1.0,
+    "avg_player_1_score": 7.5,
+    "avg_player_2_score": 7.5,
+    "avg_margin": 0.0
+  }
+]

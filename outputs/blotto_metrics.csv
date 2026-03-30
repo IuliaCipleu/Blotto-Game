@@ -1,0 +1,17 @@
+player_1_strategy,player_2_strategy,matches,player_1_win_rate,player_2_win_rate,draw_rate,avg_player_1_score,avg_player_2_score,avg_margin
+random_partition,random_partition,250,0.456,0.532,0.012,7.234,7.766,-0.532
+random_partition,top_heavy,250,0.496,0.46,0.044,7.414,7.586,-0.172
+random_partition,uniform,250,0.308,0.648,0.044,6.53,8.47,-1.94
+random_partition,weighted_value,250,0.128,0.816,0.056,5.554,9.446,-3.892
+top_heavy,random_partition,250,0.572,0.396,0.032,7.922,7.078,0.844
+top_heavy,top_heavy,250,0.0,0.0,1.0,7.5,7.5,0.0
+top_heavy,uniform,250,0.0,1.0,0.0,5.0,10.0,-5.0
+top_heavy,weighted_value,250,0.0,1.0,0.0,5.5,9.5,-4.0
+uniform,random_partition,250,0.652,0.304,0.044,8.68,6.32,2.36
+uniform,top_heavy,250,1.0,0.0,0.0,10.0,5.0,5.0
+uniform,uniform,250,0.0,0.0,1.0,7.5,7.5,0.0
+uniform,weighted_value,250,0.0,1.0,0.0,4.5,10.5,-6.0
+weighted_value,random_partition,250,0.832,0.144,0.024,9.672,5.328,4.344
+weighted_value,top_heavy,250,1.0,0.0,0.0,9.5,5.5,4.0
+weighted_value,uniform,250,1.0,0.0,0.0,10.5,4.5,6.0
+weighted_value,weighted_value,250,0.0,0.0,1.0,7.5,7.5,0.0
