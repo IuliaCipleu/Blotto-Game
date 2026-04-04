@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import html
+from collections import defaultdict
 from pathlib import Path
 
 try:
@@ -11,9 +12,31 @@ except ModuleNotFoundError:
     plt = None
 
 
+NEW_STRATEGIES = {
+    "balanced_priority",
+    "winner_take_most",
+    "anti_top_heavy",
+    "noisy_weighted",
+    "defensive_spread",
+}
+
+CLASSIC_STRATEGIES = {
+    "uniform",
+    "weighted_value",
+    "top_heavy",
+    "random_partition",
+}
+
+
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     with path.open("r", newline="", encoding="utf-8") as file_handle:
         return list(csv.DictReader(file_handle))
+
+
+def average(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    return sum(values) / len(values)
 
 
 def save_svg_bar_chart(
@@ -232,6 +255,261 @@ def plot_efficiency_metrics(metrics: list[dict[str, str]], output_dir: Path) -> 
     )
 
 
+def build_strategy_overview(metrics: list[dict[str, str]]) -> list[dict[str, float | str]]:
+    grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for row in metrics:
+        grouped[row["player_1_strategy"]].append(row)
+
+    overview = []
+    for strategy, rows in sorted(grouped.items()):
+        overview.append(
+            {
+                "strategy": strategy,
+                "win_rate": average([float(row["player_1_win_rate"]) for row in rows]),
+                "score_share": average([float(row["avg_player_1_score_share"]) for row in rows]),
+                "entropy": average([float(row["avg_player_1_entropy"]) for row in rows]),
+                "hhi": average([float(row["avg_player_1_hhi"]) for row in rows]),
+                "unused": average([float(row["avg_player_1_unused_battlefields"]) for row in rows]),
+            }
+        )
+
+    return overview
+
+
+def build_strategy_vs_group_overview(
+    metrics: list[dict[str, str]],
+    target_strategies: set[str],
+    opponent_strategies: set[str],
+) -> list[dict[str, float | str]]:
+    grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for row in metrics:
+        player_strategy = row["player_1_strategy"]
+        opponent_strategy = row["player_2_strategy"]
+        if player_strategy in target_strategies and opponent_strategy in opponent_strategies:
+            grouped[player_strategy].append(row)
+
+    overview = []
+    for strategy, rows in sorted(grouped.items()):
+        overview.append(
+            {
+                "strategy": strategy,
+                "win_rate": average([float(row["player_1_win_rate"]) for row in rows]),
+                "score_share": average([float(row["avg_player_1_score_share"]) for row in rows]),
+                "margin": average([float(row["avg_margin"]) for row in rows]),
+            }
+        )
+
+    return overview
+
+
+def build_new_strategy_scenario_overview(metrics: list[dict[str, str]]) -> list[dict[str, float | str]]:
+    grouped: dict[tuple[str, str], list[dict[str, str]]] = defaultdict(list)
+    for row in metrics:
+        strategy = row["player_1_strategy"]
+        if strategy in NEW_STRATEGIES:
+            grouped[(row["scenario"], strategy)].append(row)
+
+    overview = []
+    for (scenario, strategy), rows in sorted(grouped.items()):
+        overview.append(
+            {
+                "scenario": scenario,
+                "strategy": strategy,
+                "win_rate": average([float(row["player_1_win_rate"]) for row in rows]),
+                "score_share": average([float(row["avg_player_1_score_share"]) for row in rows]),
+            }
+        )
+
+    return overview
+
+
+def build_competitiveness_overview(metrics: list[dict[str, str]]) -> list[dict[str, float | str]]:
+    grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for row in metrics:
+        grouped[row["scenario"]].append(row)
+
+    overview = []
+    for scenario, rows in sorted(grouped.items()):
+        overview.append(
+            {
+                "scenario": scenario,
+                "close_game_rate": average([float(row["close_game_rate"]) for row in rows]),
+                "decisive_game_rate": average([float(row["decisive_game_rate"]) for row in rows]),
+                "avg_margin": average([abs(float(row["avg_margin"])) for row in rows]),
+            }
+        )
+
+    return overview
+
+
+def plot_strategy_win_rates(metrics: list[dict[str, str]], output_dir: Path) -> Path:
+    overview = build_strategy_overview(metrics)
+    labels = [str(row["strategy"]) for row in overview]
+    win_rates = [float(row["win_rate"]) for row in overview]
+    score_share = [float(row["score_share"]) for row in overview]
+    y_max = max(win_rates + score_share) * 1.15 if overview else 1.0
+
+    return bar_chart(
+        title="Overall Strategy Performance",
+        labels=labels,
+        series=[
+            ("Average win rate", win_rates, "#1d4ed8"),
+            ("Average score share", score_share, "#0f766e"),
+        ],
+        output_path_png=output_dir / "strategy_performance.png",
+        output_path_svg=output_dir / "strategy_performance.svg",
+        y_label="Rate",
+        y_max=y_max,
+    )
+
+
+def plot_strategy_style(metrics: list[dict[str, str]], output_dir: Path) -> Path:
+    overview = build_strategy_overview(metrics)
+    labels = [str(row["strategy"]) for row in overview]
+    entropy = [float(row["entropy"]) for row in overview]
+    hhi = [float(row["hhi"]) for row in overview]
+    y_max = max(entropy + hhi) * 1.15 if overview else 1.0
+
+    return bar_chart(
+        title="Allocation Style by Strategy",
+        labels=labels,
+        series=[
+            ("Average entropy", entropy, "#ea580c"),
+            ("Average HHI", hhi, "#7c2d12"),
+        ],
+        output_path_png=output_dir / "strategy_style.png",
+        output_path_svg=output_dir / "strategy_style.svg",
+        y_label="Value",
+        y_max=y_max,
+    )
+
+
+def plot_strategy_unused_battlefields(metrics: list[dict[str, str]], output_dir: Path) -> Path:
+    overview = build_strategy_overview(metrics)
+    labels = [str(row["strategy"]) for row in overview]
+    unused = [float(row["unused"]) for row in overview]
+    y_max = max(unused) * 1.15 if overview else 1.0
+
+    return bar_chart(
+        title="Unused Battlefields by Strategy",
+        labels=labels,
+        series=[
+            ("Average unused battlefields", unused, "#b91c1c"),
+        ],
+        output_path_png=output_dir / "strategy_unused_battlefields.png",
+        output_path_svg=output_dir / "strategy_unused_battlefields.svg",
+        y_label="Battlefields",
+        y_max=y_max,
+    )
+
+
+def plot_match_competitiveness(metrics: list[dict[str, str]], output_dir: Path) -> Path:
+    overview = build_competitiveness_overview(metrics)
+    labels = [str(row["scenario"]) for row in overview]
+    close_rates = [float(row["close_game_rate"]) for row in overview]
+    decisive_rates = [float(row["decisive_game_rate"]) for row in overview]
+    y_max = max(close_rates + decisive_rates) * 1.15 if overview else 1.0
+
+    return bar_chart(
+        title="Match Competitiveness by Scenario",
+        labels=labels,
+        series=[
+            ("Close game rate", close_rates, "#2563eb"),
+            ("Decisive game rate", decisive_rates, "#f59e0b"),
+        ],
+        output_path_png=output_dir / "match_competitiveness.png",
+        output_path_svg=output_dir / "match_competitiveness.svg",
+        y_label="Rate",
+        y_max=y_max,
+    )
+
+
+def plot_average_score_margin(metrics: list[dict[str, str]], output_dir: Path) -> Path:
+    overview = build_competitiveness_overview(metrics)
+    labels = [str(row["scenario"]) for row in overview]
+    margins = [float(row["avg_margin"]) for row in overview]
+    y_max = max(margins) * 1.15 if overview else 1.0
+
+    return bar_chart(
+        title="Average Score Margin by Scenario",
+        labels=labels,
+        series=[
+            ("Average absolute margin", margins, "#9333ea"),
+        ],
+        output_path_png=output_dir / "average_score_margin.png",
+        output_path_svg=output_dir / "average_score_margin.svg",
+        y_label="Score margin",
+        y_max=y_max,
+    )
+
+
+def plot_new_strategy_performance(metrics: list[dict[str, str]], output_dir: Path) -> Path:
+    overview = [row for row in build_strategy_overview(metrics) if str(row["strategy"]) in NEW_STRATEGIES]
+    labels = [str(row["strategy"]) for row in overview]
+    win_rates = [float(row["win_rate"]) for row in overview]
+    score_share = [float(row["score_share"]) for row in overview]
+    y_max = max(win_rates + score_share) * 1.15 if overview else 1.0
+
+    return bar_chart(
+        title="New Strategy Performance",
+        labels=labels,
+        series=[
+            ("Average win rate", win_rates, "#2563eb"),
+            ("Average score share", score_share, "#16a34a"),
+        ],
+        output_path_png=output_dir / "new_strategy_performance.png",
+        output_path_svg=output_dir / "new_strategy_performance.svg",
+        y_label="Rate",
+        y_max=y_max,
+    )
+
+
+def plot_new_vs_classic_strategies(metrics: list[dict[str, str]], output_dir: Path) -> Path:
+    overview = build_strategy_vs_group_overview(
+        metrics=metrics,
+        target_strategies=NEW_STRATEGIES,
+        opponent_strategies=CLASSIC_STRATEGIES,
+    )
+    labels = [str(row["strategy"]) for row in overview]
+    win_rates = [float(row["win_rate"]) for row in overview]
+    margins = [float(row["margin"]) for row in overview]
+    y_max = max(win_rates + margins) * 1.15 if overview else 1.0
+
+    return bar_chart(
+        title="New Strategies vs Classic Strategies",
+        labels=labels,
+        series=[
+            ("Average win rate vs classic", win_rates, "#0f766e"),
+            ("Average margin vs classic", margins, "#ea580c"),
+        ],
+        output_path_png=output_dir / "new_vs_classic.png",
+        output_path_svg=output_dir / "new_vs_classic.svg",
+        y_label="Value",
+        y_max=y_max,
+    )
+
+
+def plot_new_strategy_by_scenario(metrics: list[dict[str, str]], output_dir: Path) -> Path:
+    overview = build_new_strategy_scenario_overview(metrics)
+    labels = [f'{row["scenario"]}\n{row["strategy"]}' for row in overview]
+    win_rates = [float(row["win_rate"]) for row in overview]
+    score_share = [float(row["score_share"]) for row in overview]
+    y_max = max(win_rates + score_share) * 1.15 if overview else 1.0
+
+    return bar_chart(
+        title="New Strategy Performance by Scenario",
+        labels=labels,
+        series=[
+            ("Average win rate", win_rates, "#7c3aed"),
+            ("Average score share", score_share, "#dc2626"),
+        ],
+        output_path_png=output_dir / "new_strategy_by_scenario.png",
+        output_path_svg=output_dir / "new_strategy_by_scenario.svg",
+        y_label="Rate",
+        y_max=y_max,
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Plot saved Blotto metrics and scenario summaries.")
     parser.add_argument("--metrics-path", type=Path, default=Path("outputs/blotto_metrics.csv"))
@@ -254,11 +532,27 @@ def main() -> None:
     draws_plot = plot_draw_and_ties(scenarios=scenarios, output_dir=args.output_dir)
     best_matchups_plot = plot_best_strategy_by_scenario(metrics=metrics, output_dir=args.output_dir)
     efficiency_plot = plot_efficiency_metrics(metrics=metrics, output_dir=args.output_dir)
+    strategy_performance_plot = plot_strategy_win_rates(metrics=metrics, output_dir=args.output_dir)
+    strategy_style_plot = plot_strategy_style(metrics=metrics, output_dir=args.output_dir)
+    unused_battlefields_plot = plot_strategy_unused_battlefields(metrics=metrics, output_dir=args.output_dir)
+    competitiveness_plot = plot_match_competitiveness(metrics=metrics, output_dir=args.output_dir)
+    score_margin_plot = plot_average_score_margin(metrics=metrics, output_dir=args.output_dir)
+    new_strategy_performance_plot = plot_new_strategy_performance(metrics=metrics, output_dir=args.output_dir)
+    new_vs_classic_plot = plot_new_vs_classic_strategies(metrics=metrics, output_dir=args.output_dir)
+    new_strategy_by_scenario_plot = plot_new_strategy_by_scenario(metrics=metrics, output_dir=args.output_dir)
 
     print(f"Runtime plot saved to {runtime_plot}")
     print(f"Draw/tie plot saved to {draws_plot}")
     print(f"Best matchup plot saved to {best_matchups_plot}")
     print(f"Efficiency plot saved to {efficiency_plot}")
+    print(f"Strategy performance plot saved to {strategy_performance_plot}")
+    print(f"Strategy style plot saved to {strategy_style_plot}")
+    print(f"Unused battlefields plot saved to {unused_battlefields_plot}")
+    print(f"Competitiveness plot saved to {competitiveness_plot}")
+    print(f"Score margin plot saved to {score_margin_plot}")
+    print(f"New strategy performance plot saved to {new_strategy_performance_plot}")
+    print(f"New vs classic plot saved to {new_vs_classic_plot}")
+    print(f"New strategy by scenario plot saved to {new_strategy_by_scenario_plot}")
 
 
 if __name__ == "__main__":

@@ -53,6 +53,16 @@ def allocate_weighted_budget(
     return allocations
 
 
+def normalize_weights(weights: list[float]) -> list[float]:
+    if not weights:
+        raise ValueError("weights must not be empty")
+
+    normalized = [max(weight, 0.0) for weight in weights]
+    if sum(normalized) <= 0:
+        return [1.0] * len(weights)
+    return normalized
+
+
 def random_partition_strategy(
     troops: int,
     battlefield_values: list[int],
@@ -89,7 +99,7 @@ def weighted_value_strategy(
 ) -> list[int]:
     return allocate_weighted_budget(
         troops=troops,
-        weights=[float(value) for value in battlefield_values],
+        weights=normalize_weights([float(value) for value in battlefield_values]),
         rng=rng,
     )
 
@@ -108,13 +118,121 @@ def top_heavy_strategy(
         else:
             boosted_weights.append(max(float(value) * 0.5, 0.1))
 
-    return allocate_weighted_budget(troops=troops, weights=boosted_weights, rng=rng)
+    return allocate_weighted_budget(
+        troops=troops,
+        weights=normalize_weights(boosted_weights),
+        rng=rng,
+    )
+
+
+def balanced_priority_strategy(
+    troops: int,
+    battlefield_values: list[int],
+    rng: random.Random,
+) -> list[int]:
+    battlefields = len(battlefield_values)
+    average_value = sum(battlefield_values) / battlefields
+    blended_weights = [
+        0.6 * float(value) + 0.4 * average_value
+        for value in battlefield_values
+    ]
+    return allocate_weighted_budget(
+        troops=troops,
+        weights=normalize_weights(blended_weights),
+        rng=rng,
+    )
+
+
+def winner_take_most_strategy(
+    troops: int,
+    battlefield_values: list[int],
+    rng: random.Random,
+) -> list[int]:
+    ranked_indices = sorted(
+        range(len(battlefield_values)),
+        key=lambda idx: (battlefield_values[idx], rng.random()),
+        reverse=True,
+    )
+    focus_count = min(max(2, len(battlefield_values) // 3), len(battlefield_values))
+    focus_indices = set(ranked_indices[:focus_count])
+    focused_weights = [
+        float(value) * 3.0 if idx in focus_indices else 0.15
+        for idx, value in enumerate(battlefield_values)
+    ]
+    return allocate_weighted_budget(
+        troops=troops,
+        weights=normalize_weights(focused_weights),
+        rng=rng,
+    )
+
+
+def anti_top_heavy_strategy(
+    troops: int,
+    battlefield_values: list[int],
+    rng: random.Random,
+) -> list[int]:
+    max_value = max(battlefield_values)
+    adjusted_weights = []
+
+    for value in battlefield_values:
+        if value == max_value:
+            adjusted_weights.append(max(float(value) * 0.2, 0.1))
+        else:
+            adjusted_weights.append(float(value) * 1.5 + 0.75)
+
+    return allocate_weighted_budget(
+        troops=troops,
+        weights=normalize_weights(adjusted_weights),
+        rng=rng,
+    )
+
+
+def noisy_weighted_strategy(
+    troops: int,
+    battlefield_values: list[int],
+    rng: random.Random,
+) -> list[int]:
+    noisy_weights = [
+        max(float(value) * (1.0 + rng.uniform(-0.35, 0.35)), 0.1)
+        for value in battlefield_values
+    ]
+    return allocate_weighted_budget(
+        troops=troops,
+        weights=normalize_weights(noisy_weights),
+        rng=rng,
+    )
+
+
+def defensive_spread_strategy(
+    troops: int,
+    battlefield_values: list[int],
+    rng: random.Random,
+) -> list[int]:
+    battlefields = len(battlefield_values)
+    guaranteed_floor = min(troops // battlefields, 1)
+    allocation = [guaranteed_floor] * battlefields
+    remaining_troops = troops - sum(allocation)
+
+    if remaining_troops == 0:
+        return allocation
+
+    reinforcements = allocate_weighted_budget(
+        troops=remaining_troops,
+        weights=normalize_weights([float(value) for value in battlefield_values]),
+        rng=rng,
+    )
+    return [base + extra for base, extra in zip(allocation, reinforcements, strict=True)]
 
 
 STRATEGIES: dict[str, StrategyFn] = {
     "uniform": uniform_strategy,
     "weighted_value": weighted_value_strategy,
     "top_heavy": top_heavy_strategy,
+    "balanced_priority": balanced_priority_strategy,
+    "winner_take_most": winner_take_most_strategy,
+    "anti_top_heavy": anti_top_heavy_strategy,
+    "noisy_weighted": noisy_weighted_strategy,
+    "defensive_spread": defensive_spread_strategy,
     "random_partition": random_partition_strategy,
 }
 
