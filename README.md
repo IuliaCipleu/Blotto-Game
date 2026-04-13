@@ -5,6 +5,7 @@ Two-player Colonel Blotto simulation project with:
 - reusable strategy simulation in `blotto.py`
 - scalable dataset and metric generation in `generate_dataset.py`
 - runtime and metric plotting in `plot.py`
+- adaptive repeated-play experiments and strategic analysis artifacts in `generate_dataset.py`
 
 ## Strategies
 
@@ -32,6 +33,16 @@ The generator runs multiple testing scenarios by default:
 - `high_value`
 
 Each scenario varies troop count, battlefield count, battlefield values, and number of matches per strategy pairing.
+
+## Advanced Analysis
+
+The generator now also produces higher-level strategic analysis outputs, including:
+
+- adaptive repeated-play experiments using a UCB-style meta-agent that learns which base strategy to deploy against each opponent
+- strategy sensitivity summaries across troop counts, battlefield counts, and battlefield value concentration
+- pairwise payoff matrices and dominance relationships between strategies
+- behavior-based clustering of strategies using win rate, score share, entropy, HHI, margin, and unused battlefields
+- an approximate mixed-strategy equilibrium using multiplicative-weights dynamics on the payoff matrix
 
 ## Run
 
@@ -85,3 +96,13 @@ These plots help compare:
 - how strategy performance changes from one scenario to another
 
 Outputs are saved under `outputs/`.
+
+Additional analysis files include:
+
+- `strategy_sensitivity.csv` / `strategy_sensitivity.json`
+- `strategy_payoff_matrix.csv` / `strategy_payoff_matrix.json`
+- `strategy_dominance.csv` / `strategy_dominance.json`
+- `strategy_clusters.csv` / `strategy_clusters.json`
+- `approximate_equilibrium.json`
+- `adaptive_match_history.csv` / `adaptive_match_history.json`
+- `adaptive_summary.csv` / `adaptive_summary.json`

@@ -1,0 +1,101 @@
+[
+  {
+    "strategy": "anti_top_heavy",
+    "best_scenario": "wide",
+    "best_scenario_win_rate": 0.8608333333333333,
+    "worst_scenario": "small",
+    "worst_scenario_win_rate": 0.6133333333333333,
+    "troop_count_sensitivity": 0.8843016745715377,
+    "battlefield_count_sensitivity": 0.9307999618453251,
+    "value_concentration_sensitivity": -0.964849055442212,
+    "win_rate_range": 0.24750000000000005
+  },
+  {
+    "strategy": "balanced_priority",
+    "best_scenario": "wide",
+    "best_scenario_win_rate": 0.4536111111111111,
+    "worst_scenario": "small",
+    "worst_scenario_win_rate": 0.29555555555555557,
+    "troop_count_sensitivity": 0.8760500687146024,
+    "battlefield_count_sensitivity": 0.9373943746924194,
+    "value_concentration_sensitivity": -0.9024896111075537,
+    "win_rate_range": 0.1580555555555555
+  },
+  {
+    "strategy": "defensive_spread",
+    "best_scenario": "wide",
+    "best_scenario_win_rate": 0.5894444444444444,
+    "worst_scenario": "baseline",
+    "worst_scenario_win_rate": 0.33244444444444443,
+    "troop_count_sensitivity": 0.8483181092329797,
+    "battlefield_count_sensitivity": 0.8365576561784379,
+    "value_concentration_sensitivity": -0.7821574725347221,
+    "win_rate_range": 0.257
+  },
+  {
+    "strategy": "noisy_weighted",
+    "best_scenario": "large",
+    "best_scenario_win_rate": 0.687936507936508,
+    "worst_scenario": "small",
+    "worst_scenario_win_rate": 0.5385185185185185,
+    "troop_count_sensitivity": 0.8937684258165445,
+    "battlefield_count_sensitivity": 0.937788552736056,
+    "value_concentration_sensitivity": -0.8999827072047395,
+    "win_rate_range": 0.14941798941798945
+  },
+  {
+    "strategy": "random_partition",
+    "best_scenario": "large",
+    "best_scenario_win_rate": 0.27714285714285714,
+    "worst_scenario": "wide",
+    "worst_scenario_win_rate": 0.22083333333333333,
+    "troop_count_sensitivity": -0.2699153450419672,
+    "battlefield_count_sensitivity": -0.22950947380856823,
+    "value_concentration_sensitivity": 0.18207542478761846,
+    "win_rate_range": 0.05630952380952381
+  },
+  {
+    "strategy": "top_heavy",
+    "best_scenario": "wide",
+    "best_scenario_win_rate": 0.1802777777777778,
+    "worst_scenario": "small",
+    "worst_scenario_win_rate": 0.16592592592592592,
+    "troop_count_sensitivity": 0.9715103189974414,
+    "battlefield_count_sensitivity": 0.9489206849685471,
+    "value_concentration_sensitivity": -0.9663975815417246,
+    "win_rate_range": 0.014351851851851866
+  },
+  {
+    "strategy": "uniform",
+    "best_scenario": "large",
+    "best_scenario_win_rate": 0.3558730158730159,
+    "worst_scenario": "baseline",
+    "worst_scenario_win_rate": 0.18755555555555556,
+    "troop_count_sensitivity": 0.7675795480772026,
+    "battlefield_count_sensitivity": 0.7872999226485613,
+    "value_concentration_sensitivity": -0.7252562708339766,
+    "win_rate_range": 0.16831746031746034
+  },
+  {
+    "strategy": "weighted_value",
+    "best_scenario": "large",
+    "best_scenario_win_rate": 0.7339682539682539,
+    "worst_scenario": "small",
+    "worst_scenario_win_rate": 0.5392592592592593,
+    "troop_count_sensitivity": 0.8453874316005392,
+    "battlefield_count_sensitivity": 0.9197378129726174,
+    "value_concentration_sensitivity": -0.9105201480448247,
+    "win_rate_range": 0.1947089947089946
+  },
+  {
+    "strategy": "winner_take_most",
+    "best_scenario": "high_value",
+    "best_scenario_win_rate": 0.7688888888888888,
+    "worst_scenario": "large",
+    "worst_scenario_win_rate": 0.005396825396825396,
+    "troop_count_sensitivity": -0.7908121056188901,
+    "battlefield_count_sensitivity": -0.8759670258059801,
+    "value_concentration_sensitivity": 0.8004075192068921,
+    "win_rate_range": 0.7634920634920634
+  }
+]

@@ -1,0 +1,5 @@
+strategy,compared_to,relation
+defensive_spread,balanced_priority,weakly_dominates
+noisy_weighted,uniform,weakly_dominates
+weighted_value,balanced_priority,weakly_dominates
+weighted_value,defensive_spread,weakly_dominates

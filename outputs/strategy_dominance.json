@@ -1,0 +1,22 @@
+[
+  {
+    "strategy": "defensive_spread",
+    "compared_to": "balanced_priority",
+    "relation": "weakly_dominates"
+  },
+  {
+    "strategy": "noisy_weighted",
+    "compared_to": "uniform",
+    "relation": "weakly_dominates"
+  },
+  {
+    "strategy": "weighted_value",
+    "compared_to": "balanced_priority",
+    "relation": "weakly_dominates"
+  },
+  {
+    "strategy": "weighted_value",
+    "compared_to": "defensive_spread",
+    "relation": "weakly_dominates"
+  }
+]

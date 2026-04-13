@@ -1,0 +1,101 @@
+[
+  {
+    "strategy": "anti_top_heavy",
+    "avg_win_rate": 0.7543328924162258,
+    "avg_score_share": 0.6107922398589065,
+    "avg_margin": 7.337281305114639,
+    "avg_entropy": 2.41744074714102,
+    "avg_hhi": 0.21540380658436217,
+    "avg_unused_battlefields": 0.0,
+    "cluster_id": 1,
+    "cluster_label": "balanced_high_performers"
+  },
+  {
+    "strategy": "balanced_priority",
+    "avg_win_rate": 0.365455467372134,
+    "avg_score_share": 0.49241794952548923,
+    "avg_margin": -0.09138756613756611,
+    "avg_entropy": 2.5745022021634263,
+    "avg_hhi": 0.181875,
+    "avg_unused_battlefields": 0.0,
+    "cluster_id": 2,
+    "cluster_label": "concentrated_specialists"
+  },
+  {
+    "strategy": "defensive_spread",
+    "avg_win_rate": 0.47958289241622576,
+    "avg_score_share": 0.5331487486352566,
+    "avg_margin": 2.3080634920634924,
+    "avg_entropy": 2.510915767266248,
+    "avg_hhi": 0.19577160493827162,
+    "avg_unused_battlefields": 0.0,
+    "cluster_id": 1,
+    "cluster_label": "balanced_high_performers"
+  },
+  {
+    "strategy": "noisy_weighted",
+    "avg_win_rate": 0.5998289241622574,
+    "avg_score_share": 0.5494093684387336,
+    "avg_margin": 3.180058201058201,
+    "avg_entropy": 2.428534783527627,
+    "avg_hhi": 0.21310730322032792,
+    "avg_unused_battlefields": 0.0,
+    "cluster_id": 1,
+    "cluster_label": "balanced_high_performers"
+  },
+  {
+    "strategy": "random_partition",
+    "avg_win_rate": 0.24530467372134038,
+    "avg_score_share": 0.41201786344167296,
+    "avg_margin": -5.24797442680776,
+    "avg_entropy": 2.088204336422381,
+    "avg_hhi": 0.2941235777157228,
+    "avg_unused_battlefields": 0.6379801587301587,
+    "cluster_id": 2,
+    "cluster_label": "concentrated_specialists"
+  },
+  {
+    "strategy": "top_heavy",
+    "avg_win_rate": 0.17289462081128748,
+    "avg_score_share": 0.39306523893508016,
+    "avg_margin": -7.33342328042328,
+    "avg_entropy": 1.7366923678691877,
+    "avg_hhi": 0.4520061728395061,
+    "avg_unused_battlefields": 0.0,
+    "cluster_id": 2,
+    "cluster_label": "concentrated_specialists"
+  },
+  {
+    "strategy": "uniform",
+    "avg_win_rate": 0.25205291005291003,
+    "avg_score_share": 0.44047511547829005,
+    "avg_margin": -3.1454126984126987,
+    "avg_entropy": 2.6324294026795516,
+    "avg_hhi": 0.16890432098765432,
+    "avg_unused_battlefields": 0.0,
+    "cluster_id": 2,
+    "cluster_label": "concentrated_specialists"
+  },
+  {
+    "strategy": "weighted_value",
+    "avg_win_rate": 0.6290379188712522,
+    "avg_score_share": 0.5672638846896784,
+    "avg_margin": 4.188147707231041,
+    "avg_entropy": 2.4403031645807802,
+    "avg_hhi": 0.20869079463060947,
+    "avg_unused_battlefields": 0.0,
+    "cluster_id": 1,
+    "cluster_label": "balanced_high_performers"
+  },
+  {
+    "strategy": "winner_take_most",
+    "avg_win_rate": 0.5159087301587302,
+    "avg_score_share": 0.5012197971781306,
+    "avg_margin": -1.2617217813051145,
+    "avg_entropy": 1.0883713727399866,
+    "avg_hhi": 0.4783333333333334,
+    "avg_unused_battlefields": 4.333333333333333,
+    "cluster_id": 3,
+    "cluster_label": "concentrated_specialists"
+  }
+]
