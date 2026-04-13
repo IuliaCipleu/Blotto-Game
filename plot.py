@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import html
+import math
 from collections import defaultdict
 from pathlib import Path
 
@@ -11,6 +12,7 @@ try:
 except ModuleNotFoundError:
     plt = None
 
+PALETTE = ["#f4f1de","#eab69f","#e07a5f","#8f5d5d","#3d405b","#5f797b","#81b29a","#f2cc8f"]
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     with path.open("r", newline="", encoding="utf-8") as file_handle:
@@ -21,6 +23,13 @@ def average(values: list[float]) -> float:
     if not values:
         return 0.0
     return sum(values) / len(values)
+
+
+def min_positive(values: list[float]) -> float:
+    positive_values = [value for value in values if value > 0]
+    if not positive_values:
+        return 1.0
+    return min(positive_values)
 
 
 def split_in_half[T](items: list[T]) -> tuple[list[T], list[T]]:
@@ -35,6 +44,7 @@ def save_svg_bar_chart(
     output_path: Path,
     y_label: str,
     y_max: float,
+    log_scale: bool = False,
 ) -> Path:
     width = 1500
     height = 820
@@ -63,21 +73,54 @@ def save_svg_bar_chart(
         f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{margin_top + chart_height}" stroke="#222" stroke-width="2"/>',
     ]
 
-    for tick in range(6):
-        value = y_max * tick / 5
-        y = margin_top + chart_height - (chart_height * tick / 5)
-        svg_parts.append(
-            f'<line x1="{margin_left - 6}" y1="{y}" x2="{margin_left + chart_width}" y2="{y}" stroke="#d8d8d8" stroke-width="1"/>'
-        )
-        svg_parts.append(
-            f'<text x="{margin_left - 12}" y="{y + 6}" text-anchor="end" font-size="{tick_font_size}" font-family="Arial">{value:.2f}</text>'
-        )
+    all_values = [value for _, values, _ in series for value in values]
+    log_min = min_positive(all_values) * 0.8 if log_scale else 0.0
+    if log_scale and log_min <= 0:
+        log_min = min_positive(all_values)
+    log_range = 1.0
+    if log_scale:
+        log_range = max((y_max / log_min), 1.000001)
+
+    if log_scale:
+        tick = log_min
+        tick_values: list[float] = []
+        while tick <= y_max * 1.000001:
+            tick_values.append(tick)
+            tick *= 10
+        if y_max not in tick_values:
+            tick_values.append(y_max)
+
+        for value in tick_values:
+            progress = 0.0 if value <= 0 else (math.log10(value / log_min) / math.log10(log_range))
+            y = margin_top + chart_height - (chart_height * progress)
+            svg_parts.append(
+                f'<line x1="{margin_left - 6}" y1="{y}" x2="{margin_left + chart_width}" y2="{y}" stroke="#d8d8d8" stroke-width="1"/>'
+            )
+            svg_parts.append(
+                f'<text x="{margin_left - 12}" y="{y + 6}" text-anchor="end" font-size="{tick_font_size}" font-family="Arial">{value:.3f}</text>'
+            )
+    else:
+        for tick in range(6):
+            value = y_max * tick / 5
+            y = margin_top + chart_height - (chart_height * tick / 5)
+            svg_parts.append(
+                f'<line x1="{margin_left - 6}" y1="{y}" x2="{margin_left + chart_width}" y2="{y}" stroke="#d8d8d8" stroke-width="1"/>'
+            )
+            svg_parts.append(
+                f'<text x="{margin_left - 12}" y="{y + 6}" text-anchor="end" font-size="{tick_font_size}" font-family="Arial">{value:.2f}</text>'
+            )
 
     for label_index, label in enumerate(labels):
         label_x = margin_left + (group_width * label_index) + group_width / 2
         for series_index, (_, values, color) in enumerate(series):
             value = values[label_index]
-            bar_height = 0 if y_max == 0 else (value / y_max) * chart_height
+            if log_scale:
+                if value <= 0:
+                    bar_height = 0
+                else:
+                    bar_height = (math.log10(value / log_min) / math.log10(log_range)) * chart_height
+            else:
+                bar_height = 0 if y_max == 0 else (value / y_max) * chart_height
             x = margin_left + (group_width * label_index) + (group_width * 0.12) + (series_index * bar_width)
             y = margin_top + chart_height - bar_height
             svg_parts.append(
@@ -194,6 +237,83 @@ def save_svg_two_panel_bar_chart(
     return output_path
 
 
+def save_svg_stacked_bar_chart(
+    title: str,
+    labels: list[str],
+    series: list[tuple[str, list[float], str]],
+    output_path: Path,
+    y_label: str,
+    y_max: float,
+    width: int = 1600,
+    height: int = 900,
+) -> Path:
+    margin_left = 90
+    margin_right = 40
+    margin_top = 90
+    margin_bottom = 260
+    chart_width = width - margin_left - margin_right
+    chart_height = height - margin_top - margin_bottom
+    title_font_size = 34
+    axis_font_size = 20
+    tick_font_size = 18
+    label_font_size = 18
+    legend_font_size = 20
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    group_width = chart_width / max(len(labels), 1)
+    bar_width = max(group_width * 0.75, 16)
+
+    svg_parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        '<rect width="100%" height="100%" fill="#ffffff" />',
+        f'<text x="{width / 2}" y="50" text-anchor="middle" font-size="{title_font_size}" font-family="Arial">{html.escape(title)}</text>',
+        f'<text x="28" y="{margin_top + chart_height / 2}" text-anchor="middle" font-size="{axis_font_size}" font-family="Arial" transform="rotate(-90 28 {margin_top + chart_height / 2})">{html.escape(y_label)}</text>',
+        f'<line x1="{margin_left}" y1="{margin_top + chart_height}" x2="{margin_left + chart_width}" y2="{margin_top + chart_height}" stroke="#222" stroke-width="2"/>',
+        f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{margin_top + chart_height}" stroke="#222" stroke-width="2"/>',
+    ]
+
+    for tick in range(6):
+        value = y_max * tick / 5
+        y = margin_top + chart_height - (chart_height * tick / 5)
+        svg_parts.append(
+            f'<line x1="{margin_left - 6}" y1="{y}" x2="{margin_left + chart_width}" y2="{y}" stroke="#d8d8d8" stroke-width="1"/>'
+        )
+        svg_parts.append(
+            f'<text x="{margin_left - 12}" y="{y + 6}" text-anchor="end" font-size="{tick_font_size}" font-family="Arial">{value:.2f}</text>'
+        )
+
+    for label_index, label in enumerate(labels):
+        label_x = margin_left + (group_width * label_index) + group_width / 2
+        x = label_x - bar_width / 2
+        cumulative_height = 0.0
+
+        for _, values, color in series:
+            value = values[label_index]
+            bar_height = 0 if y_max == 0 else (value / y_max) * chart_height
+            y = margin_top + chart_height - cumulative_height - bar_height
+            svg_parts.append(
+                f'<rect x="{x:.2f}" y="{y:.2f}" width="{bar_width:.2f}" height="{bar_height:.2f}" fill="{color}"/>'
+            )
+            cumulative_height += bar_height
+
+        for line_index, line in enumerate(label.split("\n")):
+            svg_parts.append(
+                f'<text x="{label_x:.2f}" y="{margin_top + chart_height + 32 + (line_index * 22)}" text-anchor="middle" font-size="{label_font_size}" font-family="Arial">{html.escape(line)}</text>'
+            )
+
+    legend_y = height - 40
+    for series_index, (name, _, color) in enumerate(series):
+        x = margin_left + (series_index * 260)
+        svg_parts.append(f'<rect x="{x}" y="{legend_y - 12}" width="18" height="18" fill="{color}"/>')
+        svg_parts.append(
+            f'<text x="{x + 28}" y="{legend_y + 4}" font-size="{legend_font_size}" font-family="Arial">{html.escape(name)}</text>'
+        )
+
+    svg_parts.append("</svg>")
+    output_path.write_text("\n".join(svg_parts), encoding="utf-8")
+    return output_path
+
+
 def bar_chart(
     title: str,
     labels: list[str],
@@ -202,6 +322,7 @@ def bar_chart(
     output_path_svg: Path,
     y_label: str,
     y_max: float,
+    log_scale: bool = False,
 ) -> Path:
     output_path_png.parent.mkdir(parents=True, exist_ok=True)
 
@@ -210,9 +331,9 @@ def bar_chart(
         x_positions = list(range(len(labels)))
         width = 0.8 / max(len(series), 1)
 
-        for index, (name, values, _) in enumerate(series):
+        for index, (name, values, color) in enumerate(series):
             offsets = [position - 0.4 + (width / 2) + index * width for position in x_positions]
-            ax.bar(offsets, values, width=width, label=name)
+            ax.bar(offsets, values, width=width, label=name, color=color)
 
         ax.set_title(title, fontsize=22, pad=16)
         ax.set_ylabel(y_label, fontsize=18)
@@ -220,7 +341,12 @@ def bar_chart(
         ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=15)
         ax.tick_params(axis="y", labelsize=15)
         ax.legend(fontsize=15)
-        if y_max > 0:
+        if log_scale:
+            all_values = [value for _, values, _ in series for value in values]
+            lower_bound = min_positive(all_values) * 0.8
+            ax.set_yscale("log")
+            ax.set_ylim(lower_bound, y_max)
+        elif y_max > 0:
             ax.set_ylim(0, y_max)
         fig.tight_layout()
         fig.savefig(output_path_png, dpi=200)
@@ -234,6 +360,55 @@ def bar_chart(
         output_path=output_path_svg,
         y_label=y_label,
         y_max=y_max if y_max > 0 else 1.0,
+        log_scale=log_scale,
+    )
+
+
+def stacked_bar_chart(
+    title: str,
+    labels: list[str],
+    series: list[tuple[str, list[float], str]],
+    output_path_png: Path,
+    output_path_svg: Path,
+    y_label: str,
+    y_max: float,
+    figure_size: tuple[float, float] = (13.33, 7.5),
+    svg_size: tuple[int, int] = (1600, 900),
+) -> Path:
+    output_path_png.parent.mkdir(parents=True, exist_ok=True)
+
+    if plt is not None:
+        fig, ax = plt.subplots(figsize=figure_size)
+        x_positions = list(range(len(labels)))
+        cumulative = [0.0] * len(labels)
+
+        for name, values, color in series:
+            ax.bar(x_positions, values, bottom=cumulative, label=name, color=color)
+            cumulative = [base + value for base, value in zip(cumulative, values, strict=True)]
+
+        ax.set_title(title, fontsize=22, pad=16)
+        ax.set_ylabel(y_label, fontsize=18)
+        ax.set_xlabel("Strategy matchup", fontsize=18)
+        ax.set_xticks(x_positions)
+        ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=14)
+        ax.tick_params(axis="y", labelsize=15)
+        ax.legend(fontsize=15)
+        if y_max > 0:
+            ax.set_ylim(0, y_max)
+        fig.tight_layout()
+        fig.savefig(output_path_png, dpi=200)
+        plt.close(fig)
+        return output_path_png
+
+    return save_svg_stacked_bar_chart(
+        title=title,
+        labels=labels,
+        series=series,
+        output_path=output_path_svg,
+        y_label=y_label,
+        y_max=y_max if y_max > 0 else 1.0,
+        width=svg_size[0],
+        height=svg_size[1],
     )
 
 
@@ -263,9 +438,9 @@ def two_panel_bar_chart(
             x_positions = list(range(len(panel_labels)))
             width = 0.8 / max(len(panel_series), 1)
 
-            for index, (name, values, _) in enumerate(panel_series):
+            for index, (name, values, color) in enumerate(panel_series):
                 offsets = [position - 0.4 + (width / 2) + index * width for position in x_positions]
-                ax.bar(offsets, values, width=width, label=name)
+                ax.bar(offsets, values, width=width, label=name, color=color)
 
             ax.set_ylabel(y_label, fontsize=18)
             ax.set_xticks(x_positions)
@@ -306,13 +481,14 @@ def plot_runtime_by_scenario(scenarios: list[dict[str, str]], output_dir: Path) 
         title="Scenario Runtime Comparison",
         labels=labels,
         series=[
-            ("Average runtime (ms)", avg_runtime, "#2563eb"),
-            ("Max runtime (ms)", max_runtime, "#f97316"),
+            ("Average runtime (ms)", avg_runtime, PALETTE[2]),
+            ("Max runtime (ms)", max_runtime, PALETTE[4]),
         ],
         output_path_png=output_dir / "runtime_by_scenario.png",
         output_path_svg=output_dir / "runtime_by_scenario.svg",
         y_label="Runtime (ms)",
         y_max=y_max,
+        log_scale=True,
     )
 
 
@@ -329,8 +505,8 @@ def plot_draw_and_ties(scenarios: list[dict[str, str]], output_dir: Path) -> Pat
         title="Draw Frequency and Tied Battlefields by Scenario",
         labels=labels,
         series=[
-            ("Draw rate", draw_rates, "#16a34a"),
-            ("Avg tied battlefields", avg_tied_battlefields, "#dc2626"),
+            ("Draw rate", draw_rates, PALETTE[3]),
+            ("Avg tied battlefields", avg_tied_battlefields, PALETTE[6]),
         ],
         output_path_png=output_dir / "draws_and_ties.png",
         output_path_svg=output_dir / "draws_and_ties.svg",
@@ -360,8 +536,8 @@ def plot_best_strategy_by_scenario(metrics: list[dict[str, str]], output_dir: Pa
         title="Best Player 1 Matchup per Scenario",
         labels=labels,
         series=[
-            ("Player 1 win rate", win_rates, "#3b82f6"),
-            ("Average margin", margins, "#7c3aed"),
+            ("Player 1 win rate", win_rates, PALETTE[2]),
+            ("Average margin", margins, PALETTE[4]),
         ],
         output_path_png=output_dir / "best_matchups.png",
         output_path_svg=output_dir / "best_matchups.svg",
@@ -391,8 +567,8 @@ def plot_efficiency_metrics(metrics: list[dict[str, str]], output_dir: Path) -> 
         title="Best Strategy Efficiency Snapshot",
         labels=labels,
         series=[
-            ("Avg score share", score_share, "#0891b2"),
-            ("Avg allocation entropy", entropy, "#ea580c"),
+            ("Avg score share", score_share, PALETTE[5]),
+            ("Avg allocation entropy", entropy, PALETTE[7]),
         ],
         output_path_png=output_dir / "efficiency_metrics.png",
         output_path_svg=output_dir / "efficiency_metrics.svg",
@@ -461,6 +637,29 @@ def build_competitiveness_overview(metrics: list[dict[str, str]]) -> list[dict[s
     return overview
 
 
+def build_matchup_outcome_overview(
+    metrics: list[dict[str, str]],
+    scenario: str,
+) -> list[dict[str, float | str]]:
+    grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for row in metrics:
+        if row["scenario"] == scenario:
+            grouped[row["player_1_strategy"]].append(row)
+
+    overview = []
+    for strategy, rows in sorted(grouped.items()):
+        overview.append(
+            {
+                "label": strategy,
+                "player_1_win_rate": average([float(row["player_1_win_rate"]) for row in rows]),
+                "player_2_win_rate": average([float(row["player_2_win_rate"]) for row in rows]),
+                "draw_rate": average([float(row["draw_rate"]) for row in rows]),
+            }
+        )
+
+    return overview
+
+
 def plot_strategy_win_rates(metrics: list[dict[str, str]], output_dir: Path) -> Path:
     overview = build_strategy_overview(metrics)
     labels = [str(row["strategy"]) for row in overview]
@@ -472,13 +671,39 @@ def plot_strategy_win_rates(metrics: list[dict[str, str]], output_dir: Path) -> 
         title="Overall Strategy Performance",
         labels=labels,
         series=[
-            ("Average win rate", win_rates, "#1d4ed8"),
-            ("Average score share", score_share, "#0f766e"),
+            ("Average win rate", win_rates, PALETTE[5]),
+            ("Average score share", score_share, PALETTE[7]),
         ],
         output_path_png=output_dir / "strategy_performance.png",
         output_path_svg=output_dir / "strategy_performance.svg",
         y_label="Rate",
         y_max=y_max,
+    )
+
+
+def plot_matchup_outcomes(metrics: list[dict[str, str]], output_dir: Path) -> Path:
+    scenario_names = sorted({row["scenario"] for row in metrics})
+    scenario_name = "baseline" if "baseline" in scenario_names else scenario_names[0]
+    overview = build_matchup_outcome_overview(metrics, scenario=scenario_name)
+    labels = [str(row["label"]) for row in overview]
+    player_1_win_rates = [float(row["player_1_win_rate"]) for row in overview]
+    player_2_win_rates = [float(row["player_2_win_rate"]) for row in overview]
+    draw_rates = [float(row["draw_rate"]) for row in overview]
+
+    return stacked_bar_chart(
+        title=f"Blotto Strategy Outcomes ({scenario_name} scenario)",
+        labels=labels,
+        series=[
+            ("Player 1 win rate", player_1_win_rates, PALETTE[4]),
+            ("Player 2 win rate", player_2_win_rates, PALETTE[2]),
+            ("Draw rate", draw_rates, PALETTE[6]),
+        ],
+        output_path_png=output_dir / "win_rates.png",
+        output_path_svg=output_dir / "win_rates.svg",
+        y_label="Rate",
+        y_max=1.0,
+        figure_size=(13.33, 7.5),
+        svg_size=(1600, 900),
     )
 
 
@@ -493,8 +718,8 @@ def plot_strategy_style(metrics: list[dict[str, str]], output_dir: Path) -> Path
         title="Allocation Style by Strategy",
         labels=labels,
         series=[
-            ("Average entropy", entropy, "#ea580c"),
-            ("Average HHI", hhi, "#7c2d12"),
+            ("Average entropy", entropy, PALETTE[2]),
+            ("Average HHI", hhi, PALETTE[4]),
         ],
         output_path_png=output_dir / "strategy_style.png",
         output_path_svg=output_dir / "strategy_style.svg",
@@ -513,7 +738,7 @@ def plot_strategy_unused_battlefields(metrics: list[dict[str, str]], output_dir:
         title="Unused Battlefields by Strategy",
         labels=labels,
         series=[
-            ("Average unused battlefields", unused, "#b91c1c"),
+            ("Average unused battlefields", unused, PALETTE[4]),
         ],
         output_path_png=output_dir / "strategy_unused_battlefields.png",
         output_path_svg=output_dir / "strategy_unused_battlefields.svg",
@@ -533,8 +758,8 @@ def plot_match_competitiveness(metrics: list[dict[str, str]], output_dir: Path) 
         title="Match Competitiveness by Scenario",
         labels=labels,
         series=[
-            ("Close game rate", close_rates, "#2563eb"),
-            ("Decisive game rate", decisive_rates, "#f59e0b"),
+            ("Close game rate", close_rates, PALETTE[6]),
+            ("Decisive game rate", decisive_rates, PALETTE[7]),
         ],
         output_path_png=output_dir / "match_competitiveness.png",
         output_path_svg=output_dir / "match_competitiveness.svg",
@@ -553,7 +778,7 @@ def plot_average_score_margin(metrics: list[dict[str, str]], output_dir: Path) -
         title="Average Score Margin by Scenario",
         labels=labels,
         series=[
-            ("Average absolute margin", margins, "#9333ea"),
+            ("Average absolute margin", margins, PALETTE[3]),
         ],
         output_path_png=output_dir / "average_score_margin.png",
         output_path_svg=output_dir / "average_score_margin.svg",
@@ -577,8 +802,8 @@ def plot_ranked_strategy_performance(metrics: list[dict[str, str]], output_dir: 
         title="Ranked Strategy Performance",
         labels=labels,
         series=[
-            ("Average win rate", win_rates, "#2563eb"),
-            ("Average score share", score_share, "#16a34a"),
+            ("Average win rate", win_rates, PALETTE[2]),
+            ("Average score share", score_share, PALETTE[4]),
         ],
         output_path_png=output_dir / "ranked_strategy_performance.png",
         output_path_svg=output_dir / "ranked_strategy_performance.svg",
@@ -602,8 +827,8 @@ def plot_strategy_margin_overview(metrics: list[dict[str, str]], output_dir: Pat
         title="Strategy Margin Overview",
         labels=labels,
         series=[
-            ("Average win rate", win_rates, "#0f766e"),
-            ("Average margin", margins, "#ea580c"),
+            ("Average win rate", win_rates, PALETTE[2]),
+            ("Average margin", margins, PALETTE[4]),
         ],
         output_path_png=output_dir / "strategy_margin_overview.png",
         output_path_svg=output_dir / "strategy_margin_overview.svg",
@@ -623,8 +848,8 @@ def plot_strategy_by_scenario(metrics: list[dict[str, str]], output_dir: Path) -
         title="Strategy Performance by Scenario",
         labels=labels,
         series=[
-            ("Average win rate", win_rates, "#7c3aed"),
-            ("Average score share", score_share, "#dc2626"),
+            ("Average win rate", win_rates, PALETTE[6]),
+            ("Average score share", score_share, PALETTE[7]),
         ],
         output_path_png=output_dir / "strategy_by_scenario.png",
         output_path_svg=output_dir / "strategy_by_scenario.svg",
@@ -656,6 +881,7 @@ def main() -> None:
     best_matchups_plot = plot_best_strategy_by_scenario(metrics=metrics, output_dir=args.output_dir)
     efficiency_plot = plot_efficiency_metrics(metrics=metrics, output_dir=args.output_dir)
     strategy_performance_plot = plot_strategy_win_rates(metrics=metrics, output_dir=args.output_dir)
+    matchup_outcomes_plot = plot_matchup_outcomes(metrics=metrics, output_dir=args.output_dir)
     strategy_style_plot = plot_strategy_style(metrics=metrics, output_dir=args.output_dir)
     unused_battlefields_plot = plot_strategy_unused_battlefields(metrics=metrics, output_dir=args.output_dir)
     competitiveness_plot = plot_match_competitiveness(metrics=metrics, output_dir=args.output_dir)
@@ -669,6 +895,7 @@ def main() -> None:
     print(f"Best matchup plot saved to {best_matchups_plot}")
     print(f"Efficiency plot saved to {efficiency_plot}")
     print(f"Strategy performance plot saved to {strategy_performance_plot}")
+    print(f"Matchup outcomes plot saved to {matchup_outcomes_plot}")
     print(f"Strategy style plot saved to {strategy_style_plot}")
     print(f"Unused battlefields plot saved to {unused_battlefields_plot}")
     print(f"Competitiveness plot saved to {competitiveness_plot}")

@@ -8,17 +8,12 @@ Two-player Colonel Blotto simulation project with:
 
 ## Strategies
 
-The simulator currently includes 14 strategies:
+The simulator currently includes 9 strategies:
 
-- `uniform`
-- `weighted_value`
-- `top_heavy`
-- `random_partition`
-- `balanced_priority`
-- `winner_take_most`
-- `anti_top_heavy`
-- `noisy_weighted`
-- `defensive_spread`
+- `uniform`: spreads troops as evenly as possible across all battlefields
+- `weighted_value`: allocates troops in proportion to battlefield values
+- `top_heavy`: strongly favors the highest-value battlefield while reducing investment elsewhere
+- `random_partition`: splits troops randomly across battlefields for a high-variance baseline
 - `balanced_priority`: mixes even coverage with value-aware allocation
 - `winner_take_most`: heavily commits to a small number of key battlefields
 - `anti_top_heavy`: avoids overinvesting in the single most valuable battlefield
@@ -77,16 +72,16 @@ The plotting script now generates both scenario-level and strategy-level views, 
 - `strategy_unused_battlefields`
 - `match_competitiveness`
 - `average_score_margin`
-- `new_strategy_performance`
-- `new_vs_classic`
-- `new_strategy_by_scenario`
+- `ranked_strategy_performance`
+- `strategy_margin_overview`
+- `strategy_by_scenario`
 
 These plots help compare:
 
 - runtime and scenario difficulty
 - draw frequency and score volatility
 - allocation style through entropy and HHI
-- how the five new strategies perform overall
-- how the new strategies compare against the classic baseline strategies
+- overall strategy performance across all registered strategies
+- how strategy performance changes from one scenario to another
 
 Outputs are saved under `outputs/`.

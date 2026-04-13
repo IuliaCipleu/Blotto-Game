@@ -12,7 +12,6 @@ from pathlib import Path
 
 from blotto import STRATEGIES, MatchResult, simulate_match
 
-
 @dataclass(frozen=True)
 class Scenario:
     name: str
