@@ -1,0 +1,52 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
+  <diagram name="Framework Flowchart" id="framework-flowchart">
+    <mxGraphModel dx="1348" dy="920" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=26;fontStyle=1;fontColor=#3d405b;" value="Colonel Blotto Experimental Framework" vertex="1">
+          <mxGeometry height="40" width="660" x="272.5" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="KpwXK_tKZb0wjxIiTd4p-19" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="320" width="685" x="260" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="KpwXK_tKZb0wjxIiTd4p-10" edge="1" parent="KpwXK_tKZb0wjxIiTd4p-19" source="simulation" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#3d405b;strokeWidth=2;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=block;endFill=1;" target="adaptive">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="simulation" parent="KpwXK_tKZb0wjxIiTd4p-19" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f4f1de;strokeColor=#3d405b;strokeWidth=2;fontColor=#3d405b;fontSize=17;spacingTop=6;align=center;verticalAlign=middle;fontFamily=Helvetica;" value="&lt;b&gt;Monte Carlo&amp;nbsp;&lt;/b&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203));&quot;&gt;Match&lt;/b&gt;&lt;div&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203));&quot;&gt;Simulation&lt;/b&gt;&lt;div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b&gt;•&amp;nbsp;&amp;nbsp;&lt;/b&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203));&quot;&gt;Generate every strategy-vs-strategy matchup for each selected scenario&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="183" x="100" as="geometry" />
+        </mxCell>
+        <mxCell id="KpwXK_tKZb0wjxIiTd4p-11" edge="1" parent="KpwXK_tKZb0wjxIiTd4p-19" source="features" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#3d405b;strokeWidth=2;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=block;endFill=1;" target="plots">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="features" parent="KpwXK_tKZb0wjxIiTd4p-19" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f4f1de;strokeColor=#3d405b;strokeWidth=2;fontColor=#3d405b;fontSize=17;spacingTop=6;align=center;verticalAlign=middle;fontFamily=Helvetica;" value="&lt;b&gt;Per-Match Feature Extraction&lt;/b&gt;&lt;br&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203));&quot;&gt;• Allocations&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203));&quot;&gt;• Scores and winner&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203));&quot;&gt;• Runtime&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203));&quot;&gt;• Score share&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203));&quot;&gt;• Entropy / HHI / unused fields&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="260" x="360" as="geometry" />
+        </mxCell>
+        <mxCell id="KpwXK_tKZb0wjxIiTd4p-12" edge="1" parent="KpwXK_tKZb0wjxIiTd4p-19" source="adaptive" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#3d405b;strokeWidth=2;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=block;endFill=1;" target="plots" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="adaptive" parent="KpwXK_tKZb0wjxIiTd4p-19" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f4f1de;strokeColor=#3d405b;strokeWidth=2;fontColor=#3d405b;fontSize=17;spacingTop=6;align=center;verticalAlign=middle;fontFamily=Helvetica;" value="&lt;b&gt;Adaptive Repeated-Play Module&lt;/b&gt;&lt;br&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;font style=&quot;color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203));&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;• UCB meta-agent learns which base strategy&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;background-color: transparent; text-align: center;&quot;&gt;to deploy against each opponent over time&lt;/span&gt;&lt;/font&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="140" width="220" x="81.5" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="KpwXK_tKZb0wjxIiTd4p-17" edge="1" parent="KpwXK_tKZb0wjxIiTd4p-19" source="plots" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#3d405b;strokeWidth=2;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=block;endFill=1;" target="KpwXK_tKZb0wjxIiTd4p-16" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="plots" parent="KpwXK_tKZb0wjxIiTd4p-19" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f4f1de;strokeColor=#3d405b;strokeWidth=2;fontColor=#3d405b;fontSize=17;spacingTop=6;align=center;verticalAlign=middle;fontFamily=Helvetica;" value="&lt;b&gt;Optional Visualization Layer&lt;br&gt;&lt;/b&gt;&lt;b&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203)); font-weight: normal;&quot;&gt;•&amp;nbsp; &lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203)); font-weight: normal;&quot;&gt;Charts and heatmaps built from&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(61, 64, 91), rgb(177, 180, 203)); font-weight: normal;&quot;&gt;the exported metrics and analyses&lt;/span&gt;&lt;/div&gt;&lt;/b&gt;" vertex="1">
+          <mxGeometry height="140" width="207" x="386.5" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="KpwXK_tKZb0wjxIiTd4p-19" source="simulation" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#3d405b;strokeWidth=2;endArrow=block;endFill=1;" target="features">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="KpwXK_tKZb0wjxIiTd4p-15" edge="1" parent="KpwXK_tKZb0wjxIiTd4p-19" source="KpwXK_tKZb0wjxIiTd4p-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#3d405b;strokeWidth=2;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=11;fontColor=default;labelBackgroundColor=default;endArrow=block;endFill=1;" target="simulation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="KpwXK_tKZb0wjxIiTd4p-14" parent="KpwXK_tKZb0wjxIiTd4p-19" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;rounded=1;strokeColor=#3d405b;strokeWidth=2;align=center;verticalAlign=middle;spacingTop=2;fontFamily=Helvetica;fontSize=17;fontColor=#3d405b;fillColor=#f4f1de;" value="Start" vertex="1">
+          <mxGeometry height="45" width="45" y="47.5" as="geometry" />
+        </mxCell>
+        <mxCell id="KpwXK_tKZb0wjxIiTd4p-16" parent="KpwXK_tKZb0wjxIiTd4p-19" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;rounded=1;strokeColor=#3d405b;strokeWidth=2;align=center;verticalAlign=middle;spacingTop=2;fontFamily=Helvetica;fontSize=17;fontColor=#3d405b;fillColor=#f4f1de;" value="End" vertex="1">
+          <mxGeometry height="45" width="45" x="640" y="227.5" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
