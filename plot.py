@@ -3,20 +3,28 @@ from __future__ import annotations
 import argparse
 import csv
 import html
+import json
 import math
 from collections import defaultdict
 from pathlib import Path
 
 try:
     import matplotlib.pyplot as plt
+    from matplotlib.colors import LinearSegmentedColormap
 except ModuleNotFoundError:
     plt = None
+    LinearSegmentedColormap = None
 
 PALETTE = ["#f4f1de","#eab69f","#e07a5f","#8f5d5d","#3d405b","#5f797b","#81b29a","#f2cc8f"]
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     with path.open("r", newline="", encoding="utf-8") as file_handle:
         return list(csv.DictReader(file_handle))
+
+
+def read_json(path: Path) -> object:
+    with path.open("r", encoding="utf-8") as file_handle:
+        return json.load(file_handle)
 
 
 def average(values: list[float]) -> float:
@@ -35,6 +43,47 @@ def min_positive(values: list[float]) -> float:
 def split_in_half[T](items: list[T]) -> tuple[list[T], list[T]]:
     midpoint = (len(items) + 1) // 2
     return items[:midpoint], items[midpoint:]
+
+
+def clamp(value: float, lower: float, upper: float) -> float:
+    return max(lower, min(value, upper))
+
+
+def hex_to_rgb(color: str) -> tuple[int, int, int]:
+    color = color.lstrip("#")
+    return int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)
+
+
+def rgb_to_hex(red: int, green: int, blue: int) -> str:
+    return f"#{red:02x}{green:02x}{blue:02x}"
+
+
+def blend_colors(start_color: str, end_color: str, ratio: float) -> str:
+    ratio = clamp(ratio, 0.0, 1.0)
+    start_rgb = hex_to_rgb(start_color)
+    end_rgb = hex_to_rgb(end_color)
+    blended = tuple(
+        round(start_component + (end_component - start_component) * ratio)
+        for start_component, end_component in zip(start_rgb, end_rgb, strict=True)
+    )
+    return rgb_to_hex(*blended)
+
+
+def heatmap_color(value: float, scale: float) -> str:
+    if scale <= 0:
+        return "#ffffff"
+    if value >= 0:
+        return blend_colors("#ffffff", PALETTE[2], value / scale)
+    return blend_colors("#ffffff", PALETTE[4], abs(value) / scale)
+
+
+def build_palette_heatmap_colormap() -> "LinearSegmentedColormap | None":
+    if LinearSegmentedColormap is None:
+        return None
+    return LinearSegmentedColormap.from_list(
+        "blotto_palette_heatmap",
+        [PALETTE[4], "#ffffff", PALETTE[2]],
+    )
 
 
 def save_svg_bar_chart(
@@ -314,6 +363,77 @@ def save_svg_stacked_bar_chart(
     return output_path
 
 
+def save_svg_heatmap(
+    title: str,
+    labels: list[str],
+    matrix: list[list[float]],
+    output_path: Path,
+    color_scale: float,
+) -> Path:
+    cell_size = 110
+    width = 340 + (len(labels) * cell_size)
+    height = 240 + (len(labels) * cell_size)
+    margin_left = 220
+    margin_top = 120
+    title_font_size = 34
+    label_font_size = 18
+    value_font_size = 16
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    svg_parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        '<rect width="100%" height="100%" fill="#ffffff" />',
+        f'<text x="{width / 2}" y="50" text-anchor="middle" font-size="{title_font_size}" font-family="Arial">{html.escape(title)}</text>',
+    ]
+
+    for index, label in enumerate(labels):
+        x = margin_left + index * cell_size + cell_size / 2
+        y = margin_top - 20
+        svg_parts.append(
+            f'<text x="{x}" y="{y}" text-anchor="middle" font-size="{label_font_size}" font-family="Arial" transform="rotate(-35 {x} {y})">{html.escape(label)}</text>'
+        )
+        label_y = margin_top + index * cell_size + cell_size / 2 + 6
+        svg_parts.append(
+            f'<text x="{margin_left - 12}" y="{label_y}" text-anchor="end" font-size="{label_font_size}" font-family="Arial">{html.escape(label)}</text>'
+        )
+
+    for row_index, row in enumerate(matrix):
+        for column_index, value in enumerate(row):
+            x = margin_left + column_index * cell_size
+            y = margin_top + row_index * cell_size
+            fill = heatmap_color(value, color_scale)
+            text_color = "#ffffff" if abs(value) > color_scale * 0.45 else "#222222"
+            svg_parts.append(
+                f'<rect x="{x}" y="{y}" width="{cell_size}" height="{cell_size}" fill="{fill}" stroke="#ffffff" stroke-width="2"/>'
+            )
+            svg_parts.append(
+                f'<text x="{x + cell_size / 2}" y="{y + cell_size / 2 + 6}" text-anchor="middle" font-size="{value_font_size}" font-family="Arial" fill="{text_color}">{value:.2f}</text>'
+            )
+
+    legend_x = margin_left
+    legend_y = height - 55
+    legend_width = 380
+    for step in range(40):
+        start_ratio = step / 39
+        value = -color_scale + (2 * color_scale * start_ratio)
+        svg_parts.append(
+            f'<rect x="{legend_x + step * (legend_width / 40):.2f}" y="{legend_y}" width="{legend_width / 40 + 1:.2f}" height="20" fill="{heatmap_color(value, color_scale)}"/>'
+        )
+    svg_parts.append(
+        f'<text x="{legend_x}" y="{legend_y + 40}" font-size="{label_font_size}" font-family="Arial">{-color_scale:.2f}</text>'
+    )
+    svg_parts.append(
+        f'<text x="{legend_x + legend_width / 2}" y="{legend_y + 40}" text-anchor="middle" font-size="{label_font_size}" font-family="Arial">0.00</text>'
+    )
+    svg_parts.append(
+        f'<text x="{legend_x + legend_width}" y="{legend_y + 40}" text-anchor="end" font-size="{label_font_size}" font-family="Arial">{color_scale:.2f}</text>'
+    )
+
+    svg_parts.append("</svg>")
+    output_path.write_text("\n".join(svg_parts), encoding="utf-8")
+    return output_path
+
+
 def bar_chart(
     title: str,
     labels: list[str],
@@ -409,6 +529,52 @@ def stacked_bar_chart(
         y_max=y_max if y_max > 0 else 1.0,
         width=svg_size[0],
         height=svg_size[1],
+    )
+
+
+def heatmap_chart(
+    title: str,
+    labels: list[str],
+    matrix: list[list[float]],
+    output_path_png: Path,
+    output_path_svg: Path,
+) -> Path:
+    output_path_png.parent.mkdir(parents=True, exist_ok=True)
+    color_scale = max((abs(value) for row in matrix for value in row), default=1.0)
+
+    if plt is not None:
+        fig, ax = plt.subplots(figsize=(11, 9))
+        colormap = build_palette_heatmap_colormap()
+        image = ax.imshow(matrix, cmap=colormap, vmin=-color_scale, vmax=color_scale)
+        ax.set_title(title, fontsize=22, pad=16)
+        ax.set_xticks(list(range(len(labels))))
+        ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=12)
+        ax.set_yticks(list(range(len(labels))))
+        ax.set_yticklabels(labels, fontsize=12)
+        for row_index, row in enumerate(matrix):
+            for column_index, value in enumerate(row):
+                ax.text(
+                    column_index,
+                    row_index,
+                    f"{value:.2f}",
+                    ha="center",
+                    va="center",
+                    fontsize=10,
+                    color="white" if abs(value) > color_scale * 0.45 else "black",
+                )
+        colorbar = fig.colorbar(image, ax=ax, shrink=0.82)
+        colorbar.set_label("Payoff advantage", fontsize=12)
+        fig.tight_layout()
+        fig.savefig(output_path_png, dpi=200)
+        plt.close(fig)
+        return output_path_png
+
+    return save_svg_heatmap(
+        title=title,
+        labels=labels,
+        matrix=matrix,
+        output_path=output_path_svg,
+        color_scale=color_scale,
     )
 
 
@@ -858,10 +1024,97 @@ def plot_strategy_by_scenario(metrics: list[dict[str, str]], output_dir: Path) -
     )
 
 
+def plot_strategy_sensitivity(sensitivity_rows: list[dict[str, str]], output_dir: Path) -> Path:
+    labels = [str(row["strategy"]) for row in sensitivity_rows]
+    troop_sensitivity = [abs(float(row["troop_count_sensitivity"])) for row in sensitivity_rows]
+    battlefield_sensitivity = [abs(float(row["battlefield_count_sensitivity"])) for row in sensitivity_rows]
+    value_sensitivity = [abs(float(row["value_concentration_sensitivity"])) for row in sensitivity_rows]
+    y_max = max(troop_sensitivity + battlefield_sensitivity + value_sensitivity) * 1.15 if sensitivity_rows else 1.0
+
+    return bar_chart(
+        title="Strategy Sensitivity by Scenario Inputs",
+        labels=labels,
+        series=[
+            ("|Troop count corr.|", troop_sensitivity, PALETTE[2]),
+            ("|Battlefield count corr.|", battlefield_sensitivity, PALETTE[4]),
+            ("|Value concentration corr.|", value_sensitivity, PALETTE[6]),
+        ],
+        output_path_png=output_dir / "strategy_sensitivity.png",
+        output_path_svg=output_dir / "strategy_sensitivity.svg",
+        y_label="Absolute correlation",
+        y_max=y_max,
+    )
+
+
+def plot_equilibrium_weights(equilibrium: dict[str, object], output_dir: Path) -> Path:
+    strategy_weights = equilibrium.get("strategy_weights", [])
+    labels = [str(row["strategy"]) for row in strategy_weights if isinstance(row, dict)]
+    weights = [float(row["weight"]) for row in strategy_weights if isinstance(row, dict)]
+    y_max = max(weights) * 1.15 if weights else 1.0
+
+    return bar_chart(
+        title="Approximate Mixed-Strategy Equilibrium Weights",
+        labels=labels,
+        series=[
+            ("Strategy weight", weights, PALETTE[5]),
+        ],
+        output_path_png=output_dir / "equilibrium_weights.png",
+        output_path_svg=output_dir / "equilibrium_weights.svg",
+        y_label="Mixture weight",
+        y_max=y_max,
+    )
+
+
+def plot_adaptive_summary(adaptive_rows: list[dict[str, str]], output_dir: Path) -> Path:
+    scenario_names = sorted({row["scenario"] for row in adaptive_rows})
+    scenario_name = "baseline" if "baseline" in scenario_names else scenario_names[0]
+    selected_rows = [row for row in adaptive_rows if row["scenario"] == scenario_name]
+    labels = [str(row["opponent_strategy"]) for row in selected_rows]
+    win_rates = [float(row["win_rate"]) for row in selected_rows]
+    switch_rates = [
+        float(row["strategy_switches"]) / max(float(row["rounds_played"]), 1.0)
+        for row in selected_rows
+    ]
+    y_max = max(win_rates + switch_rates) * 1.15 if selected_rows else 1.0
+
+    return bar_chart(
+        title=f"Adaptive Meta-Agent vs Opponents ({scenario_name} scenario)",
+        labels=labels,
+        series=[
+            ("Adaptive win rate", win_rates, PALETTE[2]),
+            ("Strategy switch rate", switch_rates, PALETTE[7]),
+        ],
+        output_path_png=output_dir / "adaptive_summary.png",
+        output_path_svg=output_dir / "adaptive_summary.svg",
+        y_label="Rate",
+        y_max=y_max,
+    )
+
+
+def plot_payoff_heatmap(payoff_rows: list[dict[str, str]], output_dir: Path) -> Path:
+    labels = [str(row["strategy"]) for row in payoff_rows]
+    matrix = [
+        [float(row[label]) for label in labels]
+        for row in payoff_rows
+    ]
+
+    return heatmap_chart(
+        title="Strategy Payoff Matrix Heatmap",
+        labels=labels,
+        matrix=matrix,
+        output_path_png=output_dir / "strategy_payoff_heatmap.png",
+        output_path_svg=output_dir / "strategy_payoff_heatmap.svg",
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Plot saved Blotto metrics and scenario summaries.")
     parser.add_argument("--metrics-path", type=Path, default=Path("outputs/blotto_metrics.csv"))
     parser.add_argument("--scenario-path", type=Path, default=Path("outputs/scenario_summary.csv"))
+    parser.add_argument("--sensitivity-path", type=Path, default=Path("outputs/strategy_sensitivity.csv"))
+    parser.add_argument("--payoff-matrix-path", type=Path, default=Path("outputs/strategy_payoff_matrix.csv"))
+    parser.add_argument("--adaptive-summary-path", type=Path, default=Path("outputs/adaptive_summary.csv"))
+    parser.add_argument("--equilibrium-path", type=Path, default=Path("outputs/approximate_equilibrium.json"))
     parser.add_argument("--output-dir", type=Path, default=Path("outputs/plots"))
     return parser.parse_args()
 
@@ -870,11 +1123,21 @@ def main() -> None:
     args = parse_args()
     metrics = read_csv_rows(args.metrics_path)
     scenarios = read_csv_rows(args.scenario_path)
+    sensitivity_rows = read_csv_rows(args.sensitivity_path)
+    payoff_rows = read_csv_rows(args.payoff_matrix_path)
+    adaptive_rows = read_csv_rows(args.adaptive_summary_path)
+    equilibrium = read_json(args.equilibrium_path)
 
     if not metrics:
         raise ValueError(f"No metrics found in {args.metrics_path}")
     if not scenarios:
         raise ValueError(f"No scenario summary found in {args.scenario_path}")
+    if not sensitivity_rows:
+        raise ValueError(f"No sensitivity rows found in {args.sensitivity_path}")
+    if not payoff_rows:
+        raise ValueError(f"No payoff matrix rows found in {args.payoff_matrix_path}")
+    if not adaptive_rows:
+        raise ValueError(f"No adaptive summary rows found in {args.adaptive_summary_path}")
 
     runtime_plot = plot_runtime_by_scenario(scenarios=scenarios, output_dir=args.output_dir)
     draws_plot = plot_draw_and_ties(scenarios=scenarios, output_dir=args.output_dir)
@@ -889,6 +1152,10 @@ def main() -> None:
     ranked_strategy_performance_plot = plot_ranked_strategy_performance(metrics=metrics, output_dir=args.output_dir)
     strategy_margin_overview_plot = plot_strategy_margin_overview(metrics=metrics, output_dir=args.output_dir)
     strategy_by_scenario_plot = plot_strategy_by_scenario(metrics=metrics, output_dir=args.output_dir)
+    sensitivity_plot = plot_strategy_sensitivity(sensitivity_rows=sensitivity_rows, output_dir=args.output_dir)
+    equilibrium_plot = plot_equilibrium_weights(equilibrium=equilibrium, output_dir=args.output_dir)
+    adaptive_plot = plot_adaptive_summary(adaptive_rows=adaptive_rows, output_dir=args.output_dir)
+    payoff_heatmap_plot = plot_payoff_heatmap(payoff_rows=payoff_rows, output_dir=args.output_dir)
 
     print(f"Runtime plot saved to {runtime_plot}")
     print(f"Draw/tie plot saved to {draws_plot}")
@@ -903,6 +1170,10 @@ def main() -> None:
     print(f"Ranked strategy performance plot saved to {ranked_strategy_performance_plot}")
     print(f"Strategy margin overview plot saved to {strategy_margin_overview_plot}")
     print(f"Strategy by scenario plot saved to {strategy_by_scenario_plot}")
+    print(f"Strategy sensitivity plot saved to {sensitivity_plot}")
+    print(f"Equilibrium weights plot saved to {equilibrium_plot}")
+    print(f"Adaptive summary plot saved to {adaptive_plot}")
+    print(f"Payoff heatmap plot saved to {payoff_heatmap_plot}")
 
 
 if __name__ == "__main__":

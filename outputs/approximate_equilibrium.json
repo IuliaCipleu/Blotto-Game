@@ -1,54 +1,54 @@
 {
   "iterations": 4000,
   "learning_rate": 0.18,
-  "expected_self_play_payoff": 6.894828659551966e-06,
-  "best_response_payoff": 0.007169543703984181,
-  "approximate_exploitability": 0.007162648875324629,
+  "expected_self_play_payoff": 6.867104111376787e-06,
+  "best_response_payoff": 0.007167900911425963,
+  "approximate_exploitability": 0.0071610338073145865,
   "strategy_weights": [
     {
       "strategy": "anti_top_heavy",
-      "weight": 0.4323678040633052,
-      "payoff_against_mixture": 0.007169543703984181
+      "weight": 0.4324763156483681,
+      "payoff_against_mixture": 0.007167900911425963
     },
     {
       "strategy": "winner_take_most",
-      "weight": 0.42010914291526175,
-      "payoff_against_mixture": 0.0005074982643805881
+      "weight": 0.4200290683930148,
+      "payoff_against_mixture": 0.0005705995366719154
     },
     {
       "strategy": "top_heavy",
-      "weight": 0.14458421312772637,
-      "payoff_against_mixture": -0.01481812772526871
+      "weight": 0.14455690122026935,
+      "payoff_against_mixture": -0.015004945655310695
     },
     {
       "strategy": "weighted_value",
-      "weight": 0.0008393993855984493,
-      "payoff_against_mixture": -0.4265104588235357
+      "weight": 0.0008417351594304835,
+      "payoff_against_mixture": -0.4266127887938744
     },
     {
       "strategy": "noisy_weighted",
-      "weight": 0.0007163968642632115,
-      "payoff_against_mixture": -0.37190355791279706
+      "weight": 0.0007123502432678783,
+      "payoff_against_mixture": -0.3720149515639845
     },
     {
       "strategy": "defensive_spread",
-      "weight": 0.0004774759166404551,
-      "payoff_against_mixture": -0.42803903149423295
+      "weight": 0.0004775269831681196,
+      "payoff_against_mixture": -0.4281488411198813
     },
     {
       "strategy": "balanced_priority",
-      "weight": 0.0003316509479577767,
-      "payoff_against_mixture": -0.4290552797685359
+      "weight": 0.0003317356508059277,
+      "payoff_against_mixture": -0.42916393908280276
     },
     {
       "strategy": "random_partition",
-      "weight": 0.0003257854829350693,
-      "payoff_against_mixture": -0.3021175604586365
+      "weight": 0.00032633767570814027,
+      "payoff_against_mixture": -0.30212492507026145
     },
     {
       "strategy": "uniform",
-      "weight": 0.0002481312963095596,
-      "payoff_against_mixture": -0.37955215468718495
+      "weight": 0.0002480290259666559,
+      "payoff_against_mixture": -0.37964888824185444
     }
   ]
 }

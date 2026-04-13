@@ -357,6 +357,9 @@ def build_pairwise_payoff_matrix(
     for strategy_1 in strategies:
         matrix[strategy_1] = {}
         for strategy_2 in strategies:
+            if strategy_1 == strategy_2:
+                matrix[strategy_1][strategy_2] = 0.0
+                continue
             values = grouped.get((strategy_1, strategy_2), [])
             matrix[strategy_1][strategy_2] = average(values)
 

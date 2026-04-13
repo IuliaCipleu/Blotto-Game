@@ -86,6 +86,10 @@ The plotting script now generates both scenario-level and strategy-level views, 
 - `ranked_strategy_performance`
 - `strategy_margin_overview`
 - `strategy_by_scenario`
+- `strategy_sensitivity`
+- `equilibrium_weights`
+- `adaptive_summary`
+- `strategy_payoff_heatmap`
 
 These plots help compare:
 
